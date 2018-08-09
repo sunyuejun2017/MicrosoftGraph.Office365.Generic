@@ -1,0 +1,25 @@
+﻿@model List<OfficeDevPnP.MSGraphAPI.Models.MailFolder>
+@{
+    ViewBag.Title = "ListFolders";
+}
+
+<h2>ListFolders</h2>
+
+
+<table>
+    <tr>
+        <td>DisplayName</td>
+        <td>Total Count</td>
+        <td>Unread Count</td>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.TotalItemCount</td>
+            <td>@item.UnreadItemCount</td>
+        </tr>
+    }
+
+</table>
+

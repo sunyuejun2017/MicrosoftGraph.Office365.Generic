@@ -13,6 +13,9 @@ using System.Text;
 using Newtonsoft.Json.Serialization;
 using System.Configuration;
 
+
+
+
 namespace OfficeDevPnP.MSGraphAPIDemo.Components
 {
     public static class MicrosoftGraphHelper
@@ -20,8 +23,9 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Components
         //public static String MicrosoftGraphV1BaseUri = "https://graph.microsoft.com/v1.0/";
         //public static String MicrosoftGraphBetaBaseUri = "https://graph.microsoft.com/beta/";
 
-
-        public static string MicrosoftGraphResourceId = ConfigurationManager.AppSettings["ida:MicrosoftGraphV1BaseUri"];
+        
+        public static string MicrosoftGraphResourceId = MSGraphAPIDemoSettings.MicrosoftGraphResourceId;
+            //ConfigurationManager.AppSettings["ida:MicrosoftGraphV1BaseUri"];
 
         public static String MicrosoftGraphV1BaseUri = string.Format("{0}/v1.0/", MicrosoftGraphResourceId);
         public static String MicrosoftGraphBetaBaseUri = string.Format("{0}/beta/", MicrosoftGraphResourceId);
@@ -42,13 +46,18 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Components
 
             try
             {
+                
                 ClientCredential credential = new ClientCredential(
                     MSGraphAPIDemoSettings.ClientId,
                     MSGraphAPIDemoSettings.ClientSecret);
                 string signedInUserID = System.Security.Claims.ClaimsPrincipal.Current.FindFirst(
                     ClaimTypes.NameIdentifier).Value;
+
+                String tenantId = System.Security.Claims.ClaimsPrincipal.Current.FindFirst(
+                        "http://schemas.microsoft.com/identity/claims/tenantid").Value;
+
                 AuthenticationContext authContext = new AuthenticationContext(
-                    MSGraphAPIDemoSettings.Authority,
+                    MSGraphAPIDemoSettings.AADInstance + tenantId,
                     new SessionADALCache(signedInUserID));
 
                 AuthenticationResult result = authContext.AcquireTokenSilent(

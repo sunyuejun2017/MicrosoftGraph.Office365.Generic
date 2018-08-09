@@ -1,10 +1,9 @@
-﻿using OfficeDevPnP.MSGraphAPIDemo.Components;
+﻿using OfficeDevPnP.MSGraphAPI.Infrastructure;
+using OfficeDevPnP.MSGraphAPI.Models;
 using OfficeDevPnP.MSGraphAPIDemo.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
 
@@ -48,11 +47,11 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
             try
             {
                 var newUser = UsersGroupsHelper.AddUser(
-                new Models.User
+                new User
                 {
                     AccountEnabled = true,
                     DisplayName = "API Created",
-                    PasswordProfile = new Models.PasswordProfile
+                    PasswordProfile = new PasswordProfile
                     {
                         ForceChangePasswordNextSignIn = true,
                         Password = "Pass@w0rd!",
@@ -121,17 +120,17 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
             var singlePostOfThread = UnifiedGroupsHelper.GetUnifiedGroupThreadPost(group.Id, threads[0].Id, postsOfThread[0].Id);
 
             UnifiedGroupsHelper.ReplyToUnifiedGroupThread(group.Id, threads[0].Id,
-                new Models.ConversationThreadPost
+                new ConversationThreadPost
                 {
-                    Body = new Models.ItemBody
+                    Body = new ItemBody
                     {
-                        Type = Models.BodyType.Html,
+                        Type = BodyType.Html,
                         Content = "<html><body><div>This is the body of a post created via the Microsoft Graph API!</div></body></html>",
                     },
-                    NewParticipants = new List<Models.UserInfoContainer>(
-                        new Models.UserInfoContainer[] {
-                            new Models.UserInfoContainer {
-                                Recipient = new Models.UserInfo {
+                    NewParticipants = new List<UserInfoContainer>(
+                        new UserInfoContainer[] {
+                            new UserInfoContainer {
+                                Recipient = new UserInfo {
                                     Name = model.MailSendToDescription,
                                     Address = model.MailSendTo,
                                 }
@@ -142,7 +141,7 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
             var drive = UnifiedGroupsHelper.GetUnifiedGroupDrive(group.Id);
 
             var newUnifiedGroup = UnifiedGroupsHelper.AddUnifiedGroup(
-                new Models.Group
+                new Group
                 {
                     DisplayName = "Created via API",
                     MailEnabled = true,

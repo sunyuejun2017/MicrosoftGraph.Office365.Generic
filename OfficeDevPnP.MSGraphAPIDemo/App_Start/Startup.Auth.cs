@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Globalization;
-using System.Linq;
-using System.Web;
-using Owin;
+﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using System.Threading.Tasks;
-using OfficeDevPnP.MSGraphAPIDemo.Components;
+using OfficeDevPnP.MSGraphAPI.Infrastructure;
+using Owin;
+using System;
+using System.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace OfficeDevPnP.MSGraphAPIDemo
 {
@@ -29,13 +27,18 @@ namespace OfficeDevPnP.MSGraphAPIDemo
                     ClientId = MSGraphAPIDemoSettings.ClientId,
                     Authority = MSGraphAPIDemoSettings.Authority,
                     PostLogoutRedirectUri = MSGraphAPIDemoSettings.PostLogoutRedirectUri,
+                    TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateIssuer = false
+                    },
+
                     Notifications = new OpenIdConnectAuthenticationNotifications()
                     {
                         SecurityTokenValidated = (context) =>
                         {
                             return Task.FromResult(0);
                         },
-                        AuthorizationCodeReceived = (context) =>
+                        AuthorizationCodeReceived = async (context) =>
                         {
                             var code = context.Code;
 
@@ -45,14 +48,20 @@ namespace OfficeDevPnP.MSGraphAPIDemo
                             string signedInUserID = context.AuthenticationTicket.Identity.FindFirst(
                                 ClaimTypes.NameIdentifier).Value;
 
-                            AuthenticationContext authContext = new AuthenticationContext(
-                                MSGraphAPIDemoSettings.Authority,
-                                new SessionADALCache(signedInUserID));
+                            string tenantId = context.AuthenticationTicket.Identity.FindFirst(
+                                "http://schemas.microsoft.com/identity/claims/tenantid").Value;
+
+                            //AuthenticationContext authContext = new AuthenticationContext(
+                            //    MSGraphAPIDemoSettings.Authority,
+                            //    new SessionADALCache(signedInUserID));
+
+                            Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext authContext = new Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationContext(MSGraphAPIDemoSettings.AADInstance + tenantId, new SessionADALCache(signedInUserID));
+                            
                             AuthenticationResult result = authContext.AcquireTokenByAuthorizationCode(
                                 code, new Uri(HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Path)), 
                                 credential, MSGraphAPIDemoSettings.MicrosoftGraphResourceId);
 
-                            return Task.FromResult(0);
+                            // Task.FromResult(0);
                         },
                         AuthenticationFailed = (context) =>
                         {

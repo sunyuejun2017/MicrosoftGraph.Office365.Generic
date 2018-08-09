@@ -1,13 +1,10 @@
-﻿using OfficeDevPnP.MSGraphAPIDemo.Components;
+﻿using OfficeDevPnP.MSGraphAPI.Infrastructure;
+using OfficeDevPnP.MSGraphAPI.Models;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Web;
 using System.Web.Mvc;
-using OfficeDevPnP.MSGraphAPIDemo.Models;
-using System.Threading;
 
 namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
 {
@@ -50,10 +47,10 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
 
             // Create a new folder in the root folder
             var newFolder = FilesHelper.CreateFolder(drive.Id, root.Id,
-                new Models.DriveItem
+                new DriveItem
                 {
                     Name = $"Folder Created via API - {DateTime.Now.GetHashCode()}",
-                    Folder = new Models.Folder { },
+                    Folder = new Folder { },
                 });
 
             var newFile = UploadSampleFile(drive, newFolder, Server.MapPath("~/AppIcon.png"));
@@ -61,10 +58,10 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
 
             // Create another folder in the root folder
             var anotherFolder = FilesHelper.CreateFolder(drive.Id, root.Id,
-                new Models.DriveItem
+                new DriveItem
                 {
                     Name = $"Folder Created via API - {DateTime.Now.GetHashCode()}",
-                    Folder = new Models.Folder { },
+                    Folder = new Folder { },
                 });
 
             var movedItem = FilesHelper.MoveDriveItem(drive.Id, newFile.Id, "moved.jpg", anotherFolder.Name);
@@ -79,8 +76,8 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
                 try
                 {
                     var thumbnails = FilesHelper.GetFileThumbnails(drive.Id, firstFileResult.Id);
-                    var thumbnailMedium = FilesHelper.GetFileThumbnail(drive.Id, firstFileResult.Id, Models.ThumbnailSize.Medium);
-                    var thumbnailImage = FilesHelper.GetFileThumbnailImage(drive.Id, firstFileResult.Id, Models.ThumbnailSize.Medium);
+                    var thumbnailMedium = FilesHelper.GetFileThumbnail(drive.Id, firstFileResult.Id, ThumbnailSize.Medium);
+                    var thumbnailImage = FilesHelper.GetFileThumbnailImage(drive.Id, firstFileResult.Id, ThumbnailSize.Medium);
                 }
                 catch (Exception)
                 {
@@ -134,10 +131,10 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
             return View("Index");
         }
 
-        private Models.DriveItem UploadSampleFile(Models.Drive drive, Models.DriveItem newFolder, String filePath)
+        private DriveItem UploadSampleFile(Drive drive, DriveItem newFolder, String filePath)
         {
-            Models.DriveItem result = null;
-            Stream memPhoto = getFileContent(filePath);
+            DriveItem result = null;
+            Stream memPhoto = GetFileContent(filePath);
 
             try
             {
@@ -145,9 +142,9 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
                 {
                     String contentType = "image/png";
                     result = FilesHelper.UploadFileDirect(drive.Id, newFolder.Id,
-                        new Models.DriveItem
+                        new DriveItem
                         {
-                            File = new Models.File { },
+                            File = new MSGraphAPI.Models.File { },
                             Name = filePath.Substring(filePath.LastIndexOf("\\") + 1),
                             ConflictBehavior = "rename",
                         },
@@ -167,7 +164,7 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
         {
             FilesHelper.RenameFile(drive.Id, newFile.Id, "SP2016-MinRoles.jpg");
 
-            Stream memPhoto = getFileContent(filePath);
+            Stream memPhoto = GetFileContent(filePath);
 
             try
             {
@@ -187,7 +184,7 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
             }
         }
 
-        private static Stream getFileContent(String filePath)
+        private static Stream GetFileContent(String filePath)
         {
             MemoryStream memPhoto = new MemoryStream();
             using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))

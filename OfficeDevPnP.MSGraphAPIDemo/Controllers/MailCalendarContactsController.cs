@@ -1,14 +1,15 @@
-﻿using OfficeDevPnP.MSGraphAPIDemo.Components;
+﻿using OfficeDevPnP.MSGraphAPI.Infrastructure;
+using OfficeDevPnP.MSGraphAPI.Models;
 using OfficeDevPnP.MSGraphAPIDemo.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
 
 namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
 {
+    [Authorize]
     public class MailCalendarContactsController : Controller
     {
         #region Actions to be implemented
@@ -20,7 +21,16 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
 
         public ActionResult ListFolders()
         {
-            return View();
+            var folders = MailHelper.ListFolders();
+
+          /*  String jsonResponse = MicrosoftGraphHelper.MakeGetRequestForString(
+                String.Format("{0}me/mailFolders?$skip={1}",
+                    MicrosoftGraphHelper.MicrosoftGraphV1BaseUri,
+                    0));
+
+            var folders = JsonConvert.DeserializeObject<MailFolderList>(jsonResponse);
+            */
+            return View(folders.ToList());
         }
 
         public ActionResult ListMessages()
@@ -66,7 +76,7 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
             AntiForgery.Validate();
 
             var folders = MailHelper.ListFolders();
-
+            
             // Here you can use whatever mailbox name that you like, instead of Inbox f.Name == "发件箱" || 
             var messages = MailHelper.ListMessages(folders.FirstOrDefault(f => f.Name == "收件箱").Id);
             if (messages != null && messages.Count > 0)
@@ -82,22 +92,22 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
                     }
                 }
             }
-
-            MailHelper.SendMessage(new Models.MailMessageToSend
+            
+            MailHelper.SendMessage(new MailMessageToSend
             {
-                Message = new Models.MailMessage
+                Message = new MailMessage
                 {
                     Subject = "Test message",
-                    Body = new Models.ItemBody
+                    Body = new ItemBody
                     {
                         Content = "<html><body><h1>Hello from ASP.NET MVC calling Microsoft Graph API!</h1></body></html>",
-                        Type = Models.BodyType.Html,
+                        Type = BodyType.Html,
                     },
-                    To = new List<Models.UserInfoContainer>(
-                        new Models.UserInfoContainer[] {
-                            new Models.UserInfoContainer
+                    To = new List<UserInfoContainer>(
+                        new UserInfoContainer[] {
+                            new UserInfoContainer
                             {
-                                Recipient = new Models.UserInfo
+                                Recipient = new UserInfo
                                 {
                                     Name = model.MailSendToDescription,
                                     Address = model.MailSendTo
@@ -113,20 +123,20 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
                 MailHelper.Reply(messages[0].Id, "This a direct reply!");
                 MailHelper.ReplyAll(messages[0].Id, "This a reply all!");
                /* MailHelper.Forward(messages[0].Id,
-                    new List<Models.UserInfoContainer>(
-                        new Models.UserInfoContainer[]
+                    new List<UserInfoContainer>(
+                        new UserInfoContainer[]
                         {
-                        new Models.UserInfoContainer
+                        new UserInfoContainer
                         {
-                            Recipient = new Models.UserInfo
+                            Recipient = new UserInfo
                             {
                                 Name = model.MailSendToDescription,
                                 Address = model.MailSendTo,
                             }
                         },
-                        new Models.UserInfoContainer
+                        new UserInfoContainer
                         {
-                            Recipient = new Models.UserInfo
+                            Recipient = new UserInfo
                             {
                                 Address = "o365admin@21v365.win",
                                 Name = "Tenant Admin",
@@ -155,7 +165,7 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
             var events = CalendarHelper.ListEvents(calendar.Id, 0);
             var eventsCalendarView = CalendarHelper.ListEvents(calendar.Id, DateTime.Now, DateTime.Now.AddDays(10), 0);
 
-            if (events[0].ResponseStatus != null && events[0].ResponseStatus.Response == Models.ResponseType.NotResponded)
+            if (events[0].ResponseStatus != null && events[0].ResponseStatus.Response == ResponseType.NotResponded)
             {
                 CalendarHelper.SendFeedbackForMeetingRequest(
                     calendar.Id, events[0].Id, MeetingRequestFeedback.Accept,
@@ -163,102 +173,102 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
             }
 
             var singleEvent = CalendarHelper.CreateEvent(calendars[0].Id,
-                new Models.Event
+                new Event
                 {
-                    Attendees = new List<Models.UserInfoContainer>(
-                        new Models.UserInfoContainer[]
+                    Attendees = new List<UserInfoContainer>(
+                        new UserInfoContainer[]
                         {
-                            new Models.UserInfoContainer
+                            new UserInfoContainer
                             {
-                                Recipient = new Models.UserInfo
+                                Recipient = new UserInfo
                                 {
                                     Name = model.MailSendToDescription,
                                     Address = model.MailSendTo,
                                 }
                             },
-                            new Models.UserInfoContainer
+                            new UserInfoContainer
                             {
-                                Recipient = new Models.UserInfo
+                                Recipient = new UserInfo
                                 {
                                     Address = "someone@company.com",
                                     Name = "Someone Else",
                                 }
                             },
                         }),
-                    Start = new Models.TimeInfo
+                    Start = new TimeInfo
                     {
                         DateTime = DateTime.Now.AddDays(2).ToUniversalTime(),
                         TimeZone = "UTC"
                     },
                     OriginalStartTimeZone = "UTC",
-                    End = new Models.TimeInfo
+                    End = new TimeInfo
                     {
                         DateTime = DateTime.Now.AddDays(2).AddHours(1).ToUniversalTime(),
                         TimeZone = "UTC"
                     },
                     OriginalEndTimeZone = "UTC",
-                    Importance = Models.ItemImportance.High,
+                    Importance = ItemImportance.High,
                     Subject = "Introducing the Microsoft Graph API",
-                    Body = new Models.ItemBody
+                    Body = new ItemBody
                     {
                         Content = "<html><body><h2>Let's talk about the Microsoft Graph API!</h2></body></html>",
-                        Type = Models.BodyType.Html,
+                        Type = BodyType.Html,
                     },
-                    Location = new Models.EventLocation
+                    Location = new EventLocation
                     {
                         Name = "PiaSys.com Head Quarters",
                     },
                     IsAllDay = false,
                     IsOrganizer = true,
-                    ShowAs = Models.EventStatus.WorkingElsewhere,
-                    Type = Models.EventType.SingleInstance,
+                    ShowAs = EventStatus.WorkingElsewhere,
+                    Type = EventType.SingleInstance,
                 });
 
             var nextMonday = DateTime.Now.AddDays(((int)DayOfWeek.Monday - (int)DateTime.Now.DayOfWeek + 7) % 7);
             var nextMonday9AM = new DateTime(nextMonday.Year, nextMonday.Month, nextMonday.Day, 9, 0, 0);
             var lastDayOfMonth = new DateTime(nextMonday.AddMonths(1).Year, nextMonday.AddMonths(1).Month, 1).AddDays(-1);
             var eventSeries = CalendarHelper.CreateEvent(calendars[0].Id,
-                new Models.Event
+                new Event
                 {
-                    Start = new Models.TimeInfo
+                    Start = new TimeInfo
                     {
                         DateTime = nextMonday9AM.ToUniversalTime(),
                         TimeZone = "UTC"
                     },
                     OriginalStartTimeZone = "UTC",
-                    End = new Models.TimeInfo
+                    End = new TimeInfo
                     {
                         DateTime = nextMonday9AM.AddHours(1).ToUniversalTime(),
                         TimeZone = "UTC"
                     },
                     OriginalEndTimeZone = "UTC",
-                    Importance = Models.ItemImportance.Normal,
+                    Importance = ItemImportance.Normal,
                     Subject = "Recurring Event about Microsoft Graph API",
-                    Body = new Models.ItemBody
+                    Body = new ItemBody
                     {
                         Content = "<html><body><h2>Let's talk about the Microsoft Graph API!</h2></body></html>",
-                        Type = Models.BodyType.Html,
+                        Type = BodyType.Html,
                     },
-                    Location = new Models.EventLocation
+                    Location = new EventLocation
                     {
                         Name = "Paolo's Office",
                     },
                     IsAllDay = false,
                     IsOrganizer = true,
-                    ShowAs = Models.EventStatus.Busy,
-                    Type = Models.EventType.SeriesMaster,
-                    Recurrence = new Models.EventRecurrence
+                    ShowAs = EventStatus.Busy,
+                    Type = EventType.SeriesMaster,
+                    Recurrence = new EventRecurrence
                     {
-                        Pattern = new Models.EventRecurrencePattern
+                        Pattern = new EventRecurrencePattern
                         {
-                            Type = Models.RecurrenceType.Weekly,
+                            Type = RecurrenceType.Weekly,
                             DaysOfWeek = new DayOfWeek[] { DayOfWeek.Monday },
                             Interval = 1,
                         },
-                        Range = new Models.EventRecurrenceRange
+                        Range = new EventRecurrenceRange
                         {
                             StartDate = nextMonday9AM.ToUniversalTime(),
-                            Type = Models.RecurrenceRangeType.EndDate,
+                            Type = RecurrenceRangeType.EndDate,
                             EndDate = lastDayOfMonth.ToUniversalTime(),
                         }
                     }
@@ -269,12 +279,12 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
 
             var singleEventToUpdate = CalendarHelper.GetEvent(calendar.Id, events[0].Id);
 
-            singleEventToUpdate.Attendees = new List<Models.UserInfoContainer>(
-                        new Models.UserInfoContainer[]
+            singleEventToUpdate.Attendees = new List<UserInfoContainer>(
+                        new UserInfoContainer[]
                         {
-                            new Models.UserInfoContainer
+                            new UserInfoContainer
                             {
-                                Recipient = new Models.UserInfo
+                                Recipient = new UserInfo
                                 {
                                     Name = model.MailSendToDescription,
                                     Address = model.MailSendTo,
@@ -305,14 +315,14 @@ namespace OfficeDevPnP.MSGraphAPIDemo.Controllers
             contacts[0].PersonalNotes += String.Format("Modified on {0}", DateTime.Now);
             var updatedContact = ContactsHelper.UpdateContact(contacts[0]);
 
-            var addedContact = ContactsHelper.AddContact(new Models.Contact
+            var addedContact = ContactsHelper.AddContact(new Contact
             {
                 GivenName = "Michael",
                 DisplayName = "Michael Red",
-                EmailAddresses = new List<Models.UserInfo>(
-                    new Models.UserInfo[]
+                EmailAddresses = new List<UserInfo>(
+                    new UserInfo[]
                     {
-                        new Models.UserInfo
+                        new UserInfo
                         {
                             Address = "michael@company.com",
                             Name  = "Michael Red",
