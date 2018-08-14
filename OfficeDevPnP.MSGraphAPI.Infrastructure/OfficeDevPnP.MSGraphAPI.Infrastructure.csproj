@@ -102,6 +102,7 @@
     <Compile Include="Components\MSGraphAPIDemoContext.cs" />
     <Compile Include="Components\MSGraphAPIDemoSettings.cs" />
     <Compile Include="Components\SessionADALCache.cs" />
+    <Compile Include="Components\StartupHelper.cs" />
     <Compile Include="Components\UnifiedGroupsHelper.cs" />
     <Compile Include="Components\UsersGroupsHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

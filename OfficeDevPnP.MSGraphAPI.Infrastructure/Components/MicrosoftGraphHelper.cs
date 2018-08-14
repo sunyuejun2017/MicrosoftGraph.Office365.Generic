@@ -40,21 +40,23 @@ namespace OfficeDevPnP.MSGraphAPI.Infrastructure
                 ClientCredential credential = new ClientCredential(
                     MSGraphAPIDemoSettings.ClientId,
                     MSGraphAPIDemoSettings.ClientSecret);
-                string signedInUserID = System.Security.Claims.ClaimsPrincipal.Current.FindFirst(
-                    ClaimTypes.NameIdentifier).Value;
+                
+                string userObjectID = ClaimsPrincipal.Current.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
 
                 String tenantId = System.Security.Claims.ClaimsPrincipal.Current.FindFirst(
                         "http://schemas.microsoft.com/identity/claims/tenantid").Value;
 
                 AuthenticationContext authContext = new AuthenticationContext(
                     MSGraphAPIDemoSettings.AADInstance + tenantId,
-                    new SessionADALCache(signedInUserID));
+                    new SessionADALCache(userObjectID));
 
-                AuthenticationResult result = authContext.AcquireTokenSilent(
-                    resourceId,
-                    credential,
-                    UserIdentifier.AnyUser);
+                AuthenticationResult result = authContext.AcquireTokenSilent(resourceId, credential, new UserIdentifier(userObjectID, UserIdentifierType.UniqueId));
 
+                    //authContext.AcquireTokenSilent(
+                    //resourceId,
+                    //credential,
+                    //UserIdentifier.AnyUser);
+                //result = 
                 accessToken = result.AccessToken;
             }
             catch (AdalException ex)
